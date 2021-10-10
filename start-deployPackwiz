@@ -6,9 +6,9 @@ set -eu
 
 requireVar PACKWIZ_MODPACK
 
-curl -o 'packwiz-installer-bootstrap.jar' 'https://github.com/comp500/packwiz-installer-bootstrap/releases/latest/download/packwiz-installer-bootstrap.jar'
+wget -t3 -O 'packwiz-installer-bootstrap.jar' 'https://github.com/comp500/packwiz-installer-bootstrap/releases/latest/download/packwiz-installer-bootstrap.jar'
 
-curl -o 'pack.toml' ${PACKWIZ_MODPACK}
+wget -t3 -O 'pack.toml' ${PACKWIZ_MODPACK}
 
 java -jar packwiz-installer-bootstrap.jar -g -s server ${PACKWIZ_MODPACK}
 
