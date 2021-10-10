@@ -15,7 +15,6 @@ java -jar packwiz-installer-bootstrap.jar -g -s server ${PACKWIZ_MODPACK}
 if loader_ver=$(grep -oP '(?<=fabric = ").*(?=")' pack.toml)
 then
   export TYPE=FABRIC
-  export FABRICVERSION=${loader_ver}
   exec ${SCRIPTS:-/}start-deployFabric "$@"
 elif loader_ver=$(grep -oP '(?<=forge = ").*(?=")' pack.toml)
 then
