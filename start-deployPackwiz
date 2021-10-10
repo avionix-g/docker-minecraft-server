@@ -1,0 +1,28 @@
+#!/bin/bash
+set -eu
+
+# shellcheck source=start-utils
+. ${SCRIPTS:-/}start-utils
+
+requireVar PACKWIZ_MODPACK
+
+curl -o 'packwiz-installer-bootstrap.jar' 'https://github.com/comp500/packwiz-installer-bootstrap/releases/latest/download/packwiz-installer-bootstrap.jar'
+
+curl -o 'pack.toml' ${PACKWIZ_MODPACK}
+
+java -jar packwiz-installer-bootstrap.jar -g -s server ${PACKWIZ_MODPACK}
+
+if loader_ver=$(grep -oP '(?<=fabric = ").*(?=")' pack.toml)
+then
+  export TYPE=FABRIC
+  export FABRICVERSION=${loader_ver}
+  exec ${SCRIPTS:-/}start-deployFabric "$@"
+elif loader_ver=$(grep -oP '(?<=forge = ").*(?=")' pack.toml)
+then
+  export TYPE=FORGE
+  export FORGEVERSION=${loader_ver}
+  exec ${SCRIPTS:-/}start-deployForge "$@"
+else
+  echo "Modloader type identification unsuccessful."
+  exit 1
+fi

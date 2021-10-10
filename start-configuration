@@ -167,11 +167,15 @@ case "${TYPE^^}" in
     exec ${SCRIPTS:-/}start-deployLimbo "$@"
   ;;
 
+  PACKWIZ)
+    exec ${SCRIPTS:-/}start-deployPackwiz "$@"
+  ;;
+
   *)
       log "Invalid type: '$TYPE'"
       log "Must be: VANILLA, FORGE, BUKKIT, SPIGOT, PAPER, FTBA (multiarch-only),"
       log "         CURSE_INSTANCE, CURSEFORGE, SPONGEVANILLA, PURPUR, CUSTOM,"
-      log "         MAGMA, MOHIST, CATSERVER, AIRPLANE, CANYON, LIMBO"
+      log "         MAGMA, MOHIST, CATSERVER, AIRPLANE, CANYON, LIMBO, PACKWIZ"
       exit 1
   ;;
 
