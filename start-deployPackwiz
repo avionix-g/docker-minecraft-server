@@ -4,10 +4,21 @@ set -eu
 # shellcheck source=start-utils
 . ${SCRIPTS:-/}start-utils
 
+if ${REMOVE_OLD_MODS} == "TRUE"
+then
+  log "**********************************************************************"
+  log "WARNING: Packwiz servers don't work with REMOVE_OLD_MODS=true."
+  log "         Overriding to false."
+  log "**********************************************************************"
+fi
+export REMOVE_OLD_MODS="FALSE"
+
+# Download URL for pack.toml
 requireVar PACKWIZ_MODPACK
 
-wget -t3 -O 'packwiz-installer-bootstrap.jar' 'https://github.com/comp500/packwiz-installer-bootstrap/releases/latest/download/packwiz-installer-bootstrap.jar'
+export PACKWIZ_BOOTSTRAPPER_URL='https://github.com/comp500/packwiz-installer-bootstrap/releases/latest/download/packwiz-installer-bootstrap.jar'
 
+wget -t3 -O 'packwiz-installer-bootstrap.jar' ${PACKWIZ_BOOTSTRAPPER_URL}
 wget -t3 -O 'pack.toml' ${PACKWIZ_MODPACK}
 
 java -jar packwiz-installer-bootstrap.jar -g -s server ${PACKWIZ_MODPACK}
@@ -19,9 +30,8 @@ then
 elif loader_ver=$(grep -oP '(?<=forge = ").*(?=")' pack.toml)
 then
   export TYPE=FORGE
-  export FORGEVERSION=${loader_ver}
   exec ${SCRIPTS:-/}start-deployForge "$@"
 else
-  echo "Modloader type identification unsuccessful."
+  echo "Modloader identification from pack.toml was unsuccessful. Exiting."
   exit 1
 fi
