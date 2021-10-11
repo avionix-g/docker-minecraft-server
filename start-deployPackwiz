@@ -4,7 +4,7 @@ set -eu
 # shellcheck source=start-utils
 . ${SCRIPTS:-/}start-utils
 
-if [ ${REMOVE_OLD_MODS} == "TRUE" ]
+if [[ -v REMOVE_OLD_MODS ]] && [ ${REMOVE_OLD_MODS} == "TRUE" ]
 then
   log "**********************************************************************"
   log "WARNING: Packwiz servers don't work with REMOVE_OLD_MODS=true."
