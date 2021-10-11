@@ -33,5 +33,5 @@ then
   exec ${SCRIPTS:-/}start-deployForge "$@"
 else
   echo "Modloader identification from pack.toml was unsuccessful. Exiting."
-  exit 1
+  exit 2
 fi
