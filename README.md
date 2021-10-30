@@ -52,6 +52,7 @@ By default, the container will download the latest version of the "vanilla" [Min
       * [Running a SpongeVanilla server](#running-a-spongevanilla-server)
       * [Running a Fabric Server](#running-a-fabric-server)
       * [Running a Limbo server](#running-a-limbo-server)
+      * [Running a Crucible server](#running-a-crucible-server)
    * [Running a server with a Feed the Beast modpack](#running-a-server-with-a-feed-the-beast-modpack)
       * [Environment Variables:](#environment-variables)
       * [Upgrading](#upgrading)
@@ -64,6 +65,7 @@ By default, the container will download the latest version of the "vanilla" [Min
       * [Optional plugins, mods, and config attach points](#optional-plugins-mods-and-config-attach-points)
       * [Auto-downloading SpigotMC/Bukkit/PaperMC plugins](#auto-downloading-spigotmcbukkitpapermc-plugins)
       * [Downloadable mod/plugin pack for Forge, Bukkit, and Spigot Servers](#downloadable-modplugin-pack-for-forge-bukkit-and-spigot-servers)
+      * [Generic pack file](#generic-pack-file)
       * [Mod/Plugin URL Listing File](#modplugin-url-listing-file)
       * [Remove old mods/plugins](#remove-old-modsplugins)
    * [Working with world data](#working-with-world-data)
@@ -129,8 +131,9 @@ By default, the container will download the latest version of the "vanilla" [Min
       * [Description](#description)
       * [Enabling Autopause](#enabling-autopause)
    * [Running on RaspberryPi](#running-on-raspberrypi)
+   * [Contributing](#contributing)
 
-<!-- Added by: runner, at: Sat Oct 16 00:07:36 UTC 2021 -->
+<!-- Added by: runner, at: Fri Oct 29 21:39:37 UTC 2021 -->
 
 <!--te-->
 
@@ -221,6 +224,8 @@ services:
       - ./minecraft-data:/data
 ```
 
+> NOTE: if you have SELinux enabled, then you might need to add `:Z` to the end of volume mount specifications, [as described here](https://prefetch.net/blog/2017/09/30/using-docker-volumes-on-selinux-enabled-servers/).
+
 ### Converting anonymous `/data` volume to named volume
 
 If you had used the commands in the first section, without the `-v` volume attachment, then an anonymous data volume was created by Docker. You can later bring over that content to a named or host attached volume using the following procedure.
@@ -277,13 +282,13 @@ To use a different version of Java, please use a docker tag to run your Minecraf
 | java11-openj9  | 11           | Debian | OpenJ9   | amd64             |
 | java16         | 16           | Debian | Hotspot  | amd64,arm64,armv7 |
 | java16-openj9  | 16           | Debian | OpenJ9   | amd64             |
-| multiarch-latest | 15+        | Debian | Hotspot  | amd64,arm64,armv7 |
+| java17         | 17           | Ubuntu | Hotspot  | amd64,arm64,armv7 |
 
 For example, to use Java version 16 on any supported architecture:
 
     docker run --name mc itzg/minecraft-server:java16
 
-> Keep in mind that some versions of Minecraft server can't work on the newest versions of Java. Also, FORGE doesn't support openj9 JVM implementation.
+> Keep in mind that some versions of Minecraft server, such as Forge before 1.17, can't work on the newest versions of Java. Instead, one of the Java 8 images should be used. Also, FORGE doesn't support openj9 JVM implementation.
 
 ### Deprecated Image Tags
 
@@ -292,6 +297,7 @@ The following image tags have been deprecated and are no longer receiving update
 - adopt14
 - adopt15
 - openj9-nightly
+- multiarch-latest
 
 ## Healthcheck
 
@@ -511,11 +517,14 @@ By default the latest build will be used; however, a specific build number can b
 ### Running a SpongeVanilla server
 
 Enable SpongeVanilla server mode by adding a `-e TYPE=SPONGEVANILLA` to your command-line.
+    
 By default the container will run the latest `STABLE` version.
 If you want to run a specific version, you can add `-e SPONGEVERSION=1.11.2-6.1.0-BETA-19` to your command-line.
 
+Beware that current [Sponge](https://www.spongepowered.org) `STABLE` versions for Minecraft 1.12 require using [the Java 8 tag](#running-minecraft-server-on-different-java-version):
+    
     docker run -d -v /path/on/host:/data -e TYPE=SPONGEVANILLA \
-        -p 25565:25565 -e EULA=TRUE --name mc itzg/minecraft-server
+        -p 25565:25565 -e EULA=TRUE --name mc itzg/minecraft-server:java8-multiarch
 
 You can also choose to use the `EXPERIMENTAL` branch.
 Just change it with `SPONGEBRANCH`, such as:
@@ -549,6 +558,13 @@ docker run -d -v /path/on/host:/data ... \
     -e FABRIC_INSTALLER_URL=http://HOST/fabric-installer-0.5.0.32.jar ...
 ```
 
+A specific loader version can be requested using `FABRIC_LOADER_VERSION`, such as:
+
+```
+docker run -d -v /path/on/host:/data ... \
+    -e FABRIC_LOADER_VERSION=0.11.7
+```
+
 In order to add mods, you have two options:
 
 ### Running a Limbo server
@@ -564,6 +580,16 @@ Configuration options with defaults:
 - `FORCE_REDOWNLOAD`=false
 - `LIMBO_SCHEMA_FILENAME`=default.schem
 - `LEVEL`="Default;${LIMBO_SCHEMA_FILENAME}"
+
+### Running a Crucible server
+
+A [Crucible](https://github.com/CrucibleMC/Crucible) server can be run by setting `TYPE` to `CRUCIBLE`.
+
+Configuration options with defaults:
+
+- `CRUCIBLE_RELEASE`=latest
+
+Crucible is only available for 1.7.10, so be sure to set `VERSION=1.7.10`.
 
 ## Running a server with a Feed the Beast modpack
 
@@ -694,6 +720,12 @@ You may also download or copy over individual mods using the `MODS` environment 
 - container path to a directory containing jar files
 
   docker run -d -e MODS=https://www.example.com/mods/mod1.jar,/plugins/common,/plugins/special/mod2.jar ...
+
+### Generic pack file
+
+To install all of the server content (jars, mods, plugins, configs, etc) from a zip file, such as a CurseForge modpack that is missing a server start script, then set `GENERIC_PACK` to the container path of the zip file. That, combined with `TYPE`, allows for custom content along with container managed server download and install.  
+
+If multiple generic packs need to be applied together, set `GENERIC_PACKS` instead, with a comma separated list of zip file paths and/or URLs to zip files.
 
 ### Mod/Plugin URL Listing File 
 
@@ -1418,3 +1450,7 @@ To run this image on a RaspberryPi 3 B+, 4, or newer, use any of the image tags 
 > NOTE: you may need to lower the memory allocation, such as `-e MEMORY=750m`
 
 > If experiencing issues such as "sleep: cannot read realtime clock: Operation not permitted", ensure `libseccomp` is up to date on your host. In some cases adding `:Z` flag to the `/data` mount may be needed, [but use cautiously](https://docs.docker.com/storage/bind-mounts/#configure-the-selinux-label).
+
+## Contributing
+    
+See [Development](DEVELOPMENT.md) and [Building](BUILDING.md).

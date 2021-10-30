@@ -124,10 +124,8 @@ case "${TYPE^^}" in
 
   FTB|CURSEFORGE)
     log "**********************************************************************"
-    log "WARNING: The image tag itzg/minecraft-server:java8 is recommended"
-    log "         since some mods require Java 8"
-    log "         Exception traces reporting ClassCastException: class jdk.internal.loader.ClassLoaders\$AppClassLoader"
-    log "         can be fixed with java8"
+    log "NOTE: Some mods and modpacks may require Java 8."
+    log "      If so, use itzg/minecraft-server:java8"
     log "**********************************************************************"
     exec ${SCRIPTS:-/}start-deployCF "$@"
   ;;
@@ -142,10 +140,6 @@ case "${TYPE^^}" in
 
   CUSTOM)
     exec ${SCRIPTS:-/}start-deployCustom "$@"
-  ;;
-
-  CURSE_INSTANCE)
-    exec ${SCRIPTS:-/}start-validateCurseInstance "$@"
   ;;
 
   MAGMA)
@@ -176,6 +170,16 @@ case "${TYPE^^}" in
     exec ${SCRIPTS:-/}start-deployLimbo "$@"
   ;;
 
+  CRUCIBLE)
+    log "**********************************************************************"
+    log "WARNING: The image tag itzg/minecraft-server:java8 is recommended"
+    log "         since some mods require Java 8"
+    log "         Exception traces reporting ClassCastException: class jdk.internal.loader.ClassLoaders\$AppClassLoader"
+    log "         can be fixed with java8"
+    log "**********************************************************************"
+    exec "${SCRIPTS:-/}start-deployCrucible" "$@"
+  ;;
+  
   PACKWIZ)
     exec ${SCRIPTS:-/}start-deployPackwiz "$@"
   ;;
@@ -183,8 +187,8 @@ case "${TYPE^^}" in
   *)
       log "Invalid type: '$TYPE'"
       log "Must be: VANILLA, FORGE, BUKKIT, SPIGOT, PAPER, FTBA (multiarch-only),"
-      log "         CURSE_INSTANCE, CURSEFORGE, SPONGEVANILLA, PURPUR, CUSTOM,"
-      log "         MAGMA, MOHIST, CATSERVER, AIRPLANE, CANYON, LIMBO, PACKWIZ"
+      log "         CURSEFORGE, SPONGEVANILLA, PURPUR, CUSTOM,"
+      log "         MAGMA, MOHIST, CATSERVER, AIRPLANE, CANYON, LIMBO, CRUCIBLE, PACKWIZ"
       exit 1
   ;;
 
